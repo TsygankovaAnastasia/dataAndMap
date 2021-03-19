@@ -1,14 +1,15 @@
 'use strict'
-const User = require('./userDto.js');
-var fetch = require('graphql-fetch')('http://domain.com/graphql')
+import {User} from './userDto.js';
+// import graphqlFetch from 'graphql-fetch';
+// const fetch = require('node-fetch');
+// const fetch = require('graphql-fetch')('http://domain.com/graphql');
 // var request = require( '@kgryte/github-get' );
-// import fetch from 'graphql-fetch';
 
 
 const PATH_TOKEN ='Authorization:token a0d86f9cb94a82991c95659522719268f246666a https://api.github.com/user';
 const PATH_RATE_LIMIT = 'https://api.github.com/rate_limit';
 const PATH_TO_USERS = 'https://api.github.com/users/';
-const FOLLOWERS_DIR = '/followers';
+const FOLLOWERS_DIR = '/followersq';
 const GRAPHQL_PATH = 'https://api.github.com/graphql';
 
 
@@ -69,28 +70,44 @@ function initCursorQuery(toServer, pageInfo, variables){
     }
 }
 
+
 async function postData(toServer) {
+    console.log('ToServer', toServer);
+    try{
     const response = await fetch(toServer.url, {
             method: 'POST',
             headers: {
                 authorization: toServer.userToken,            
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                // 'Content-Type': 'application/json',
+                // 'Accept': 'application/json',
+                // method: "POST",
+                // Referer: "127.0.0.1",
+                // origin: "127.0.0.1",
+                // referrerPolicy: "origin",
+                // credentials: 'include',
+                // cache: "no-cache",
+                // mode: "no-cors", // to prevent CORS errors
+                // redirect: "follow",                
             },
             body: JSON.stringify({
                 query: toServer.query,
                 variables: toServer.variables
             })
   });
-    
-    return await response.json();
+    console.log('Response', response);
+        return await response.json();
+    }
+    catch(err){
+        console.log(err);
+    }
 }
+
 
 function getPage(toServer, locationsOfFollowers, locationsOfFollowersCursorVariables){
     return new Promise(resolve =>{
         postData(toServer)
             .then((json) => {
-//                console.log("RESPONCE", json);
+               console.log("RESPONCE", json);
                 handleFollowers(locationsOfFollowers, json.data.user.followers);
                 initCursorQuery(toServer, json.data.user.followers.pageInfo, locationsOfFollowersCursorVariables);
 //                console.log("toServer.hasNextPage ", toServer.hasNextPage);
@@ -101,18 +118,19 @@ function getPage(toServer, locationsOfFollowers, locationsOfFollowersCursorVaria
 }
 
 async function getPageLog(toServer, locationsOfFollowers, locationsOfFollowersCursorVariables){
-//    console.log("!!!toServer Step 1 ", toServer);
     await getPage(toServer, locationsOfFollowers, locationsOfFollowersCursorVariables);
-//    console.log("!!!toServer.hasNextPage2 " +  toServer.hasNextPage);
 }
 
 
 async function getFollowersGraphql(user, inLogin = ''){
-//    var locationsOfFollowers = [];
+    //TODO: You will need to delete the userToken and login
+    //______________________
     var userToken = "token a0d86f9cb94a82991c95659522719268f246666a";
-    // let login = (inLogin) ? inLogin : user.login;
+    // let login = (inLogin) ? inLogin : user.login;    
+    let login = "john-smilga";
+    //______________________
+
     
-    let login = "antonioschisano";
     let pageSize = 100;
     let cursor = '';
 
@@ -131,11 +149,10 @@ async function getFollowersGraphql(user, inLogin = ''){
         await getPageLog(toServer, user.followerLocations, locationsOfFollowersCursorVariables);
     }while(toServer.hasNextPage);
     console.log('DONE');
-    // console.log('locationsOfFollowers', user.followerLocations);
     
 }
 
-module.exports = class UserRepository {
+export class UserRepository{
 
     constructor(){
     }

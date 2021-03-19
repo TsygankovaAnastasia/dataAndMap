@@ -1,16 +1,22 @@
 'use strict'
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
     mode: 'development',
-    entry: './frontend/UserController.js',
+    entry: './public/main.js',
     output: {
 
-        path:path.resolve(__dirname, "./public"), // string (default)
-        // the target directory for all output files
-        // must be an absolute path (use the Node.js path module)
-        filename: "build.js", // string (default)
-        // the filename template for entry chunks
+        path:path.resolve(__dirname, "./public"),
+        filename: "build.js",
     },
-    externals: ['graphql-fetch'],
+      plugins: [
+    // fix "process is not defined" error:
+    // (do "npm install process" before running the build)
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+    }),
+      ],
+
+    watch: true,
 };

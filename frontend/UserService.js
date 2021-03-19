@@ -1,9 +1,8 @@
 'use strict'
-const countryCodeLookup = require('iso-countries-lookup');
-const User = require('./userDto.js');
-// const requireEsm = require("esm")(module);
-const UserRepository = require('./UserRepository.js');
-// import UserRepository  from './UserRepository.js';
+// const countryCodeLookup = require('iso-countries-lookup');
+import countryCodeLookup from 'iso-countries-lookup';
+import {User} from './userDto.js';
+import {UserRepository} from './UserRepository.js';
 
 const COMA = ',';
 const SPACE = ' ';
@@ -39,7 +38,7 @@ function fillingFollowerCountriesList(user, followerCountriesList){
 }
 
 
-module.exports = class UserService {
+export class UserService {
 
     constructor(userRepository){
         this.userRepository = userRepository;
