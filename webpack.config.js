@@ -1,22 +1,29 @@
 'use strict'
 const path = require('path');
-const webpack = require('webpack');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+//const webpack = require('webpack');
 
 module.exports = {
     mode: 'development',
-    entry: './public/main.js',
+    entry: './client/main.js',
     output: {
 
-        path:path.resolve(__dirname, "./public"),
+        path:path.resolve(__dirname, "./client"),
         filename: "build.js",
     },
-      plugins: [
-    // fix "process is not defined" error:
-    // (do "npm install process" before running the build)
-    new webpack.ProvidePlugin({
-      process: 'process/browser',
-    }),
-      ],
-
     watch: true,
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    MiniCssExtractPlugin.loader, // instead of style-loader
+                    'css-loader'
+                ]
+            }
+        ]
+    },
+    plugins: [
+        new MiniCssExtractPlugin(),
+    ],
 };

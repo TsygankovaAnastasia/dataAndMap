@@ -1,5 +1,6 @@
-import {UserController} from '../frontend/UserController.js';
-import {ViewMap}  from '../frontend/view.js';
+
+import {UserController} from '../client/viewController.js';
+import {ViewMap}  from '../client/view.js';
 
 
 document.addEventListener('DOMContentLoaded', function() {

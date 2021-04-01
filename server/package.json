@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Followers",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "build": "webpack",
     "start": "node -r dotenv/config ./server/index.js",
@@ -13,18 +14,15 @@
   "dependencies": {
     "assert": "^2.0.0",
     "body-parser": "^1.19.0",
-    "css-loader": "^5.2.0",
     "dotenv": "^8.2.0",
     "ejs": "^2.7.4",
     "esm": "^3.2.25",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
-    "extract-text-webpack-plugin": "^3.0.2",
     "graphql-fetch": "^1.0.1",
     "iso-countries-lookup": "^1.1.0",
     "node-fetch": "^2.6.1",
     "process": "^0.11.10",
-    "style-loader": "^2.0.0",
     "svgmap": "^2.1.1"
   },
   "permissions": [
@@ -37,7 +35,6 @@
     "babel-loader": "^8.2.2",
     "babel-plugin-syntax-dynamic-import": "^6.18.0",
     "html-webpack-plugin": "^5.3.1",
-    "mini-css-extract-plugin": "^1.4.0",
     "nodemon": "^2.0.7",
     "webpack": "^5.24.4",
     "webpack-cli": "^4.5.0"

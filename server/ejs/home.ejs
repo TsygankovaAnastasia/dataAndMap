@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+
+<html class='html'>
+<head>
+    <%- include('./partials/head'); %>
+     <script src="https://cdn.jsdelivr.net/gh/StephanWagner/svgMap@v2.1.1/dist/svgMap.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/gh/StephanWagner/svgMap@v2.1.1/dist/svgMap.min.css" rel="stylesheet">
+    <script type='module' src="/build.js"></script>
+    <link rel="stylesheet" type="text/css" href="main.css">
+</head>
+
+<body class='body'>
+<header class='header header_location'>
+    <input class='language__radio' type='radio' value='1' id='language'></input>
+    <div class="header__hello">Привет, <%= login %></div>
+    <h1 class="header__text">Следуй за подпищиками</h1>
+    <label class="header__language language__button" for="language_ru">Русский</label>
+</header>
+
+<main class='main'>
+    <nav class="search">
+        <button class="search__my-followers">Мои подпищики</button>
+        <article class="search__my-followers_info"></article>
+        <form class='search__followers' name='search'>
+            <label for="logo"></label>
+            <input id="logo" type="text" name="search__logo">
+            <input type="submit" value="Искать подписчиков" name="search__button">
+        </form>
+        <article class="search__followers_info"></article>
+    </nav>
+    <article class="map" id="svgMap"></article>
+    <aside class="countries">
+        <nl class="countries__list">
+            <li class="countries__list__item_display" style=" --alphabet:0; --decrease:8;">A:2</li>
+            <li class="countries__list__item_display" style=" --alphabet:1; --decrease:1;">B:9</li>
+            <li class="countries__list__item_display" style=" --alphabet:2; --decrease:2;">C:8</li>
+        </nl>
+        <nav class="countries__buttons">
+            <button class="countries__buttons__prev">Назад</button>
+            <button class="countries__buttons__next">Вперёд</button>
+        </nav>
+    </aside>
+
+
+</main>
+
+<footer class='footer'>
+    <%- include('./partials/footer'); %>
+</footer>
+</body>
+</html>

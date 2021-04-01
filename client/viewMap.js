@@ -1,69 +1,58 @@
 'use strict'
 import svgMap from 'svgmap';
-// import 'svgmap/dist/svgMap.min.css';
 
-function initMap(){
-    var script = document.createElement('script');
-    // script.onload = function () {
-    //     createMap();
-    // };
-    document.head.appendChild(script);
-    // script.src = 'https://cdn.jsdelivr.net/gh/StephanWagner/svgMap@v1.6.0/dist/svgMap.min.js';
-}
-
-const FOLLOWERS = 'followers';
+const FOLLOWERS = 'followers'
 
 export class ViewMap{
     constructor(){
-        console.log("ViewMap CONSTRUCTOR");
-        initMap();
+        this.initMap(shortTestList)
+    }
+
+    initMap(listData){
         this.map = new svgMap({
             targetElementID: 'svgMap',
-            colorMax: '#CC0033',
-            colorMin: '#FFE5D9',
+            colorMax: "#CC0033",
+            colorMin: "#FFE5D9",
             colorNoData: "#E2E2E2",
             data: {
                 data: {
-                    followers: {
-                        name: 'followers',
-                        format: '{0} person',
-                    }
+                    followers: {}
                 },
-                applyData: 'followers',
-                values: testList,
+                applyData: FOLLOWERS,
+                values: {},
             },
-
         });
+        this.map.options.noDataText='';
+/*
+        let tooltipContent = document.querySelector('.svgMap-tooltip-content')
+        tooltipContent.remove()
+*/
+        /*let tooltip = document.querySelector('.svgMap-tooltip')
+        tooltip.remove()*/
     }
-    
-    
-    setDataIntoMap(data){
-        console.log('setDataIntoMap-> data', data);
-        console.log('this in view', this);
-        let list = {};
-        Object.keys(data).forEach(function(country){
-            console.log('handeling ', country);
-            list[country] = { 'followers': data[country]};
-        });
 
-        console.log('list', list);
+
+    setDataIntoMap(data){
+        let list = {}
+        console.log('data', data);
+
+        Object.keys(data).forEach(function(country){
+            list[country] = { followers: data[country]};
+        });
         let newData = {
             data: {
-                folowers: {
-                    name: 'folowers',
+                followers: {
+                    name: FOLLOWERS,
                     format: '{0} person',
-                    thousandSeparator: ',',
-                    thresholdMax: 50000,
-                    thresholdMin: 1000
                 }
             },
-            applyData: 'folowers',
-            values: list
+            applyData: FOLLOWERS,
+            values: list,
         };
-        
+        console.log('newData', newData);
+
         this['map'].applyData(newData);
-        // console.log('setDataIntoMap-> map.values', map.data.values);
-        
+
     }
 }
 
@@ -163,5 +152,5 @@ var testList ={
     XF: {followers:1},
     "||": {followers:1},
     "日本": {followers:1},
-    "日本": {followers:4}    
+    "日本": {followers:4}
 };

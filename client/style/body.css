@@ -1,0 +1,4 @@
+.body{
+    display: grid;
+    grid-template-rows: 20% 75% 5%;
+}
