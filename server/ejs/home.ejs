@@ -5,37 +5,49 @@
     <%- include('./partials/head'); %>
      <script src="https://cdn.jsdelivr.net/gh/StephanWagner/svgMap@v2.1.1/dist/svgMap.min.js"></script>
     <link href="https://cdn.jsdelivr.net/gh/StephanWagner/svgMap@v2.1.1/dist/svgMap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat&family=Source+Sans+Pro:wght@200&display=swap" rel="stylesheet">
     <script type='module' src="/build.js"></script>
     <link rel="stylesheet" type="text/css" href="main.css">
 </head>
 
 <body class='body'>
 <header class='header header_location'>
-    <input class='language__radio' type='radio' value='1' id='language'></input>
-    <div class="header__hello">Привет, <%= login %></div>
-    <h1 class="header__text">Следуй за подпищиками</h1>
-    <label class="header__language language__button" for="language_ru">Русский</label>
+    <div class="header__hello"><%= login %></div>
+    <h1 class="header__text header__text_start-animation">Следуй за подписчиками
+    </h1>
+    <img class="header__git-icon header__git-icon" src="github.png" alt="Иконка github"></img>
 </header>
 
 <main class='main'>
     <nav class="search">
-        <button class="search__my-followers">Мои подпищики</button>
-        <article class="search__my-followers_info"></article>
-        <form class='search__followers' name='search'>
+        <button class="search__my-followers button box-shadow search__appearButton">Мои подписчики</button>
+        <article class="search__my-followers_info">
+            <p class="search__my-followers_info-total"></p>
+            <p class="search__my-followers_info-detected"></p>
+        </article>
+        <form class='search__followers ' name='search'>
             <label for="logo"></label>
-            <input id="logo" type="text" name="search__logo">
-            <input type="submit" value="Искать подписчиков" name="search__button">
+            <input class="search__followers-button search__login button hide" id="logo" type="text" name="search__logo">
+            <input class="search__followers-button button hide" type="submit" value="Искать подписчиков" name="search__button">
         </form>
-        <article class="search__followers_info"></article>
+        <article class="search__followers_info">
+            <p class="search__followers_info-total"></p>
+            <p class="search__followers_info-detected"></p>
+        </article>
     </nav>
     <article class="map" id="svgMap"></article>
-    <aside class="countries">
+    <aside class="countries hide">
+        <input class='countries__sort_input' type='radio' name='sort' value='1' id='countries__sort_value' checked></input>
+        <input class='countries__sort_input' type='radio' name='sort' value='2' id='countries__sort_alphabet'></input>
+        <nav class="countries__sort hide">
+            <label class="countries__sort_label" for="countries__sort_value">по значению</label>
+            <label class="countries__sort_label" for="countries__sort_alphabet">по алфавиту</label>
+        </nav>
         <nl class="countries__list">
-            <li class="countries__list__item_display" style=" --alphabet:0; --decrease:8;">A:2</li>
-            <li class="countries__list__item_display" style=" --alphabet:1; --decrease:1;">B:9</li>
-            <li class="countries__list__item_display" style=" --alphabet:2; --decrease:2;">C:8</li>
         </nl>
-        <nav class="countries__buttons">
+        <nav class="countries__buttons hide">
             <button class="countries__buttons__prev">Назад</button>
             <button class="countries__buttons__next">Вперёд</button>
         </nav>

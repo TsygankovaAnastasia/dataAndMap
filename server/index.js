@@ -52,7 +52,7 @@ app.get('/', redirectHome, function (req, res, ){
 
 })
 
-app.get('/home',  /*redirectLogin,*/ (req, res) => {
+app.get('/home',  redirectLogin, (req, res) => {
     res.render('home', {title: 'Home', active: 'auth', login:req.session.userLogin})
 })
 

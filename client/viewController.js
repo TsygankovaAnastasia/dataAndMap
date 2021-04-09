@@ -1,36 +1,48 @@
 'use strict'
 const NAME_FORM_SEARCH = 'search';
-const PAGE_SIZE = 12
+const PAGE_SIZE = 14
 
 export class UserController{
     constructor(viewMap){
         console.log("controllel constructor");
-        this.setEventsListener();
         this.viewMap = viewMap
         this.viewCountryPage = 0
         this.countPage = 0
+        this.list = {}
+        this.totalFollowers = 0
         let login = getUserLogin.call(this)
-        console.log('constructor', login)
+        this.setEventsListener();
     }
 
     setFormEventListner(){
-    var form = document.forms[NAME_FORM_SEARCH];
+        var form = document.forms[NAME_FORM_SEARCH];
         setButtonText(form.search__button, STATE_START)
         form.addEventListener('submit', (event) => {
-        this.processPressSubmit(event, this.viewMap);
-    }, false);
-    form.elements[0].addEventListener('click', (event) => {
-        this.clearForm(event);
-    }, false);
+            this.processPressSubmit(event, this.viewMap);
+        }, false);
+        form.elements[0].addEventListener('click', (event) => {
+            this.clearForm(event);
+        }, false);
     }
 
     clearForm(event){
         event.target.value=''
     }
+
     setCountryButtonsEventListner(){
-        setEventHandler('countries__buttons__next', this.getCountriesNextPage.bind(this))
-        setEventHandler('countries__buttons__prev', this.getCountriesPrevPage.bind(this))
-        setEventHandler('search__my-followers', this.renderMyFollowers.bind(this))
+        setEventHandler('.countries__buttons__next', 'click', this.getCountriesNextPage.bind(this))
+        setEventHandler('.countries__buttons__prev', 'click', this.getCountriesPrevPage.bind(this))
+        setEventHandler('.search__my-followers', 'click', this.renderMyFollowers.bind(this))
+        setEventHandler('#countries__sort_value', 'change', this.sortingData.bind(this), SORT_VALUE)
+        setEventHandler('#countries__sort_alphabet', 'change', this.sortingData.bind(this), SORT_ALPHABET)
+        setEventHandler('.button', 'focus', this.removeShadow.bind(this))
+        setEventHandler('.search__followers-button', 'focus', this.removeShadow.bind(this))
+    }
+
+    sortingData(event, mode){
+        setCountriesData(this.list, mode[0])
+        this.viewCountryPage = 0
+        this.getCountriesNextPage()
     }
 
     async setEventsListener(){
@@ -38,37 +50,42 @@ export class UserController{
         this.setCountryButtonsEventListner()
     }
 
-
     async getFollowerLocations(searchLogo){
         return await request('/followers/' + searchLogo);
     }
     async renderMyFollowers(event){
         setButtonText(event.target, STATE_SEARCH)
-        this.renderFollowers(event, this.userLogin)
+        await this.renderFollowers(event, this.userLogin)
+        this.setFollowersInfo('search__my-followers_info', this.totalFollowers,
+            Object.keys(this.list).length, this.userLogin)
         setButtonText(event.target, STATE_MY_FOLLOWERS)
+        userPathStep1(event.target)
     }
     async processPressSubmit(event){
         let searchLogo = event.target.search__logo.value;
         if (searchLogo === '')
             return
-        event.preventDefault();//?? не перерисовывает?
+        event.preventDefault();
         setButtonText(event.target.search__button, STATE_SEARCH)
-        this.renderFollowers(event, searchLogo)
+        await this.renderFollowers(event, searchLogo)
+        this.setFollowersInfo('search__followers_info', this.totalFollowers, this.detectedFollowersCount, searchLogo)
         setButtonText(event.target.search__button, STATE_START)
+        userPathStep2()
     }
 
     async renderFollowers(event, searchLogo){
-        let list = {};
         let total;
         try{
-            //this.viewMap.deinitMap('start')
-            // TODO убрать заглушку
             let resultQuery = await this.getFollowerLocations(searchLogo);
-            list = resultQuery.list;
-            total = resultQuery.total;
-            this.viewMap.setDataIntoMap(list)
-            setCountriesData(list)
-            this.countPage = parseInt(Object.keys(list).length / PAGE_SIZE) + 1
+
+            this.list = resultQuery.list;
+            this.totalFollowers = resultQuery.totalFollowersCount
+            this.detectedFollowersCount = resultQuery.detectedFollowersCount
+            this.viewCountryPage = 0
+
+            this.viewMap.setDataIntoMap(this.list)
+            setCountriesData(this.list)
+            this.countPage = parseInt(Object.keys(this.list).length / PAGE_SIZE) + 1
             this.getCountriesNextPage()
         }catch(err){
             console.log(err.message);
@@ -79,24 +96,39 @@ export class UserController{
     }
 
     getCountriesNextPage(){
-        if (this.viewCountryPage < this.countPage) {
+        if (this.viewCountryPage < this.countPage - 1) {
             let list = document.querySelectorAll('.countries__list__item')
-            removeClassToPageList(list, 'countries__list__item_display', this.viewCountryPage)
+            addClassToPageList(list, 'countries__list__item_hide', this.viewCountryPage)
             this.viewCountryPage++
-            addClassToPageList(list, 'countries__list__item_display', this.viewCountryPage)
+            removeClassToPageList(list, 'countries__list__item_hide', this.viewCountryPage)
         }
     }
 
     getCountriesPrevPage(event){
         if (this.viewCountryPage > 1) {
             let list = document.querySelectorAll('.countries__list__item')
-            removeClassToPageList(list, 'countries__list__item_display', this.viewCountryPage)
+            addClassToPageList(list, 'countries__list__item_hide', this.viewCountryPage)
             this.viewCountryPage--
-            addClassToPageList(list, 'countries__list__item_display', this.viewCountryPage)
+            removeClassToPageList(list, 'countries__list__item_hide', this.viewCountryPage)
         }
     }
-}
 
+    setFollowersInfo(className, total, detected, name){
+        name = (name === this.userLogin) ? 'тебя' : name
+        let totalFild = document.querySelector('.' + className + '-total')
+        let detectedFild = document.querySelector('.' + className + '-detected')
+        let textFollowers = getTextFollowers(total)
+        total = (total === 0) ? 'нет' : total
+        totalFild.textContent = "У " + name + " " + total + " " + textFollowers
+        detectedFild.textContent = (detected === 0) ?
+            "Местополонежение определить не возможно" :
+            "Местоположение определено у " + detected + " из них"
+    }
+
+    removeShadow(event){
+        event.target.classList.remove('box-shadow')
+    }
+}
 
 
 async function request(url, method='GET', data=null){
@@ -141,38 +173,52 @@ function setButtonText(button, state){
     }
 }
 
-
-function generateListIteam(key, value, number, maxValue){
-    let decreaseValue = maxValue - value
-    let orderAlphabet = ' --alphabet:' + number + ';'
-    let orderDecrease = ' --decrease:' + decreaseValue + ';'
-    return `<li class=\"countries__list__item\" style=\"`+ orderAlphabet + orderDecrease + `\">` + key + ':' + value
+function generateListIteam(value){
+    let strInHtml = value[0] + '  ' + value[1]
+    return `<li class=\"countries__list__item countries__list__item_hide \">` + strInHtml
 }
 
-function setCountriesData(data){
-    console.log('data in setCountriesData', data)
-    let arrayCountries = Object.keys(data)
-    console.log('before', arrayCountries)
-    arrayCountries.sort()
-    console.log('after', arrayCountries)
-    let maxValue = Math.max.apply(null, Object.values(data))
-    console.log('maxValue', maxValue)
-    let listCountriesHtml = arrayCountries.reduce((listCountriesHtml, country, i) => {
-        return listCountriesHtml + generateListIteam(country, data[country], i, maxValue)
+const SORT_VALUE = 1;
+const SORT_ALPHABET = 2;
+
+function getSortData(data, mode=SORT_VALUE){
+    let sortKeys;
+    switch (mode){
+        case (SORT_ALPHABET):
+            sortKeys = { more: 1, less: -1, index:0}; break;
+        case (SORT_VALUE):
+            sortKeys = { more: -1, less: 1, index:1}; break;
+    }
+
+    return Object.entries(data).sort((curr, next)=>{
+        if (curr[sortKeys.index] > next[sortKeys.index]) return sortKeys.more;
+        if (curr[sortKeys.index] < next[sortKeys.index]) return sortKeys.less;
+        return 0;
+    })
+}
+
+function createListCountries(data){
+    let listCountriesHtml = Object.values(data).reduce((listCountriesHtml, country) => {
+        return listCountriesHtml + generateListIteam(country)
     }, '')
-
-    console.log('listCountriesHtml', listCountriesHtml)
-    document.querySelector('.countries__list').innerHTML = listCountriesHtml;
+    return listCountriesHtml
 }
 
-let testString = '<li>TR:1</li><li>BE:1</li><li>GH:2</li><li>FR:3</li><li>IN:10</li><li>US:1</li><li>CO:1</li><li>OH:1</li><li>PH:4</li><li>DZ:3</li><li>RW:1</li><li>TN:1</li><li>CA:2</li><li>FI:1</li><li>RU:4</li><li>PT:2</li><li>SE:1</li><li>ET:1</li><li>NO:1</li><li>CD:1</li><li>CL:1</li><li>GB:1</li><li>ID:1</li><li>IT:1</li><li>BY:1</li><li>BD:3</li><li>VN:1</li><li>SD:1</li><li>RO:1</li><li>KR:1</li><li>ES:1</li><li>NG:2</li><li>UP:1</li><li>MA:3</li><li>CI:1</li><li>TZ:1</li><li>UZ:1</li><li>AU:2</li><li>NP:1</li><li>MN:1</li><li>CN:1</li><li>EC:1</li><li>MD:1</li><li>UA:1</li><li>EG:1</li><li>MX:2</li><li>PL:2</li><li>SV:2</li><li>BR:3</li><li>SP:1</li><li>UK:1</li><li>SK:1</li><li>PK:2</li><li>KE:1</li><li>SY:1</li>';
-let testString2 = '<li class="countries__list__item">TR:10<li class="countries__list__item">BE:1<li class="countries__list__item">GH:2<li class="countries__list__item">FR:3<li class="countries__list__item">IN:10<li class="countries__list__item">US:1<li class="countries__list__item">CO:1<li class="countries__list__item">OH:1<li class="countries__list__item">PH:4<li class="countries__list__item">DZ:3<li class="countries__list__item">RW:1<li class="countries__list__item">TN:1<li class="countries__list__item">CA:2<li class="countries__list__item">FI:1<li class="countries__list__item">RU:4<li class="countries__list__item">PT:2<li class="countries__list__item">SE:1<li class="countries__list__item">ET:1<li class="countries__list__item">NO:1<li class="countries__list__item">CD:1<li class="countries__list__item">CL:1<li class="countries__list__item">GB:1<li class="countries__list__item">ID:1<li class="countries__list__item">IT:1<li class="countries__list__item">BY:1<li class="countries__list__item">BD:3<li class="countries__list__item">VN:1<li class="countries__list__item">SD:1<li class="countries__list__item">RO:1<li class="countries__list__item">KR:1<li class="countries__list__item">ES:1<li class="countries__list__item">NG:2<li class="countries__list__item">UP:1<li class="countries__list__item">MA:3<li class="countries__list__item">CI:1<li class="countries__list__item">TZ:1<li class="countries__list__item">UZ:1<li class="countries__list__item">AU:2<li class="countries__list__item">NP:1<li class="countries__list__item">MN:1<li class="countries__list__item">CN:1<li class="countries__list__item">EC:1<li class="countries__list__item">MD:1<li class="countries__list__item">UA:1<li class="countries__list__item">EG:1<li class="countries__list__item">MX:2<li class="countries__list__item">PL:2<li class="countries__list__item">SV:2<li class="countries__list__item">BR:3<li class="countries__list__item">SP:1<li class="countries__list__item">UK:1<li class="countries__list__item">SK:1<li class="countries__list__item">PK:2<li class="countries__list__item">KE:1<li class="countries__list__item">SY:1';
-
-function setEventHandler(elementClass, callback){
-    let element = document.querySelector('.' + elementClass)
-    element.addEventListener('click', (event) => callback(event))
+function setCountriesData(data, modeSort=SORT_VALUE){
+    console.log('setCountriesData', data)
+    if (data) {
+        let sortData = getSortData(data, modeSort)
+        let listHtml = createListCountries(sortData)
+        document.querySelector('.countries__list').innerHTML = listHtml;
+    }
 }
 
+function setEventHandler(conditions, hotEvent, callback){
+    let element = document.querySelector(conditions)
+    let params = Array.from(arguments).slice(3);
+    console.log('params', params);
+    element.addEventListener(hotEvent, (event) => callback(event, params))
+}
 
 function removeClassToPageList(list, oldClass, page){
     let startPoint=page * PAGE_SIZE - PAGE_SIZE
@@ -183,10 +229,11 @@ function removeClassToPageList(list, oldClass, page){
         list[i].classList.remove(oldClass)
     }
 }
+
 function addClassToPageList(list, newClass, page){
     let startPoint=page * PAGE_SIZE - PAGE_SIZE
     if (startPoint < 0)
-        return
+        return;
     let endPoint = startPoint + PAGE_SIZE
     for (let i = startPoint; i < endPoint && i < list.length; i++){
         list[i].classList.add(newClass)
@@ -196,4 +243,37 @@ function addClassToPageList(list, newClass, page){
 async function getUserLogin(){
     this.userLogin = await request('/user/login')
     console.log('getLogin', this.userLogin)
+}
+
+function getTextFollowers(number){
+    let tail = number % 10
+    switch(tail){
+        case 0: return 'подписчиков';
+        case 1: return 'подписчик';
+        case 2: return 'подписчика';
+        case 3: return 'подписчика';
+        case 4: return 'подписчика';
+        case 5: return 'подписчиков';
+        case 6: return 'подписчиков';
+        case 7: return 'подписчиков';
+        case 8: return 'подписчиков';
+        case 9: return 'подписчиков';
+    }
+}
+
+function userPathStep1(button) {
+    button.classList.remove('box-shadow')
+    let searchFollowersButtons = document.querySelectorAll('.search__followers-button')
+    for (let field of searchFollowersButtons) {
+        field.classList.remove('hide')
+        field.classList.add('search__appearButton')
+    }
+    let searchFollowers = document.querySelector('.search__login')
+    searchFollowers.classList.add('box-shadow')
+}
+function userPathStep2() {
+    let hideList = document.querySelectorAll('.hide')
+    for ( let hide of hideList){
+        hide.classList.remove('hide')
+    }
 }

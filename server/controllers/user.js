@@ -27,13 +27,12 @@ export const oAuthUser = async (req, res) => {
     res.redirect("/home");
 }
 
-//TODO redirect
-//TODO define login in session
 export async function getFollowerLocations(req, res) {
     let list = {}
     let searchLogo = req.params.searchLogo
 
     let user = new User(req.session.userLogin, req.session.accessToken)
     await getFollowerCountriesList(user, searchLogo, list)
-    res.json({total: user.followerCount, list: list})
+    console.log('detected', user.detectedFollowerCount)
+    res.json({totalFollowersCount: user.followerCount, detectedFollowersCount: user.detectedFollowerCount, list: list})
 }

@@ -7,5 +7,6 @@ export class User {
         this.login = login;
         this.followerLocations = [];
         this.followerCount = 0;
+        this.detectedFollowerCount = 0;
     }
 }

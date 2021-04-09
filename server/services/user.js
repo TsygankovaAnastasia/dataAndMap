@@ -5,11 +5,10 @@ import {getAccessToken, getUserLogin, getFollowerLocations} from '../reposirory/
 const COMA = ',';
 const SPACE = ' ';
 
-function detectCountry(location, seperator, codeList, found){
+function detectCountry(location, seperator, codeList){
+    let found = false;
     let sliceLocation = location.split(seperator);
     sliceLocation.forEach(function(subStr){
-        if (found)
-            return;
         let countryCode = countryCodeLookup(subStr)
         if (countryCode !== undefined){
             found = true
@@ -19,20 +18,21 @@ function detectCountry(location, seperator, codeList, found){
                 codeList[countryCode] = 1
         }
     });
+    return found
 }
 
 
 function fillingFollowerCountriesList(user, followerCountriesList){
     user.followerLocations.forEach(function(item){
-        let found = false;
-        detectCountry(item, COMA, followerCountriesList, found);
-        //TODO detect country by space
-/*
+        let found = detectCountry(item, COMA, followerCountriesList);
         if (!found)
-            detectCountry(item, SPACE, followerCountriesList, found);
-*/
+            detectCountry(item, SPACE, followerCountriesList);
+
+        if (found)
+            user.detectedFollowerCount++;
+
+        console.log(user.detectedFollowerCount, item)
         found = false;
-        console.log(item)
     })
 }
 
